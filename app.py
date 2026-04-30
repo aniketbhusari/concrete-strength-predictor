@@ -2,9 +2,18 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import joblib
+import plotly.graph_objects as go
 
-# 1. Page Configuration
-st.set_page_config(page_title="Concrete Strength Predictor", layout="centered")
+# 1. Page Configuration (Wide layout looks more professional)
+st.set_page_config(page_title="Concrete AI", page_icon="🏗️", layout="wide")
+
+# Custom CSS for cleaner spacing
+st.markdown("""
+    <style>
+    .main {padding-top: 2rem;}
+    .stButton>button {width: 100%; border-radius: 5px; height: 3em; background-color: #ff4b4b; color: white;}
+    </style>
+    """, unsafe_allow_html=True)
 
 # 2. Load the Model and Scaler
 @st.cache_resource
@@ -17,45 +26,75 @@ model, scaler = load_assets()
 
 # 3. App Header
 st.title("🏗️ Concrete Compressive Strength Predictor")
-st.markdown("""
-This application uses a trained **XGBoost Machine Learning Model** to predict the compressive strength of high-performance concrete. 
-Enter your mix design parameters below.
----
-""")
+st.markdown("Predict the compressive strength of high-performance concrete using our trained **XGBoost Machine Learning Model**.")
+st.divider()
 
-# 4. User Input Fields
-st.subheader("Mix Proportions & Curing Age")
+# Layout: Split the screen into two main columns (Inputs on left, Output on right)
+col_inputs, col_output = st.columns([1.5, 1], gap="large")
 
-col1, col2 = st.columns(2)
+with col_inputs:
+    st.subheader("⚙️ Mix Design Parameters")
+    
+    # Use tabs to organize inputs cleanly
+    tab1, tab2 = st.tabs(["Binders & Water", "Aggregates & Admixtures"])
+    
+    with tab1:
+        col1, col2 = st.columns(2)
+        with col1:
+            cement = st.number_input("Cement (kg/m³)", 100.0, 600.0, 281.0, help="Main binding material")
+            slag = st.number_input("Blast Furnace Slag (kg/m³)", 0.0, 400.0, 74.0, help="Supplementary cementitious material")
+        with col2:
+            fly_ash = st.number_input("Fly Ash (kg/m³)", 0.0, 300.0, 54.0, help="Improves workability and late strength")
+            water = st.number_input("Water (kg/m³)", 100.0, 250.0, 181.0, help="Crucial for hydration; affects water-cement ratio")
+            
+    with tab2:
+        col3, col4 = st.columns(2)
+        with col3:
+            superplasticizer = st.number_input("Superplasticizer (kg/m³)", 0.0, 50.0, 6.0, help="Water reducer for high-performance concrete")
+            age = st.slider("Curing Age (days)", 1, 365, 28, help="Standard testing is usually done at 28 days")
+        with col4:
+            coarse_agg = st.number_input("Coarse Aggregate (kg/m³)", 800.0, 1200.0, 973.0)
+            fine_agg = st.number_input("Fine Aggregate (kg/m³)", 500.0, 1000.0, 774.0)
 
-with col1:
-    cement = st.number_input("Cement (kg/m³)", min_value=100.0, max_value=600.0, value=281.0, step=5.0)
-    slag = st.number_input("Blast Furnace Slag (kg/m³)", min_value=0.0, max_value=400.0, value=74.0, step=5.0)
-    fly_ash = st.number_input("Fly Ash (kg/m³)", min_value=0.0, max_value=300.0, value=54.0, step=5.0)
-    water = st.number_input("Water (kg/m³)", min_value=100.0, max_value=250.0, value=181.0, step=2.0)
+    st.write("") # spacing
+    predict_btn = st.button("Calculate Compressive Strength", type="primary")
 
-with col2:
-    superplasticizer = st.number_input("Superplasticizer (kg/m³)", min_value=0.0, max_value=50.0, value=6.0, step=1.0)
-    coarse_agg = st.number_input("Coarse Aggregate (kg/m³)", min_value=800.0, max_value=1200.0, value=973.0, step=10.0)
-    fine_agg = st.number_input("Fine Aggregate (kg/m³)", min_value=500.0, max_value=1000.0, value=774.0, step=10.0)
-    age = st.number_input("Curing Age (days)", min_value=1, max_value=365, value=28, step=1)
-
-# 5. Prediction Logic
-st.markdown("---")
-if st.button("Predict Compressive Strength", type="primary", use_container_width=True):
+with col_output:
+    st.subheader("📊 Prediction Results")
     
-    # Bundle the user inputs into a 2D array
-    input_values = [[cement, slag, fly_ash, water, superplasticizer, coarse_agg, fine_agg, age]]
-    
-    # THE FIX: Dynamically apply the exact column names the scaler memorized!
-    input_data = pd.DataFrame(input_values, columns=scaler.feature_names_in_)
-    
-    # Apply the exact same scaling used during training
-    scaled_input = scaler.transform(input_data)
-    
-    # Generate the prediction
-    prediction = model.predict(scaled_input)[0]
-    
-   # Display the result
-    st.success("Prediction Complete!")
-    st.markdown(f"### 🏗️ Predicted Strength: **{prediction:.2f} MPa**")
+    if predict_btn:
+        # Bundle inputs
+        input_values = [[cement, slag, fly_ash, water, superplasticizer, coarse_agg, fine_agg, age]]
+        input_data = pd.DataFrame(input_values, columns=scaler.feature_names_in_)
+        
+        # Scale and predict
+        scaled_input = scaler.transform(input_data)
+        prediction = model.predict(scaled_input)[0]
+        
+        # Draw a beautiful Plotly Gauge Chart
+        fig = go.Figure(go.Indicator(
+            mode = "gauge+number",
+            value = prediction,
+            domain = {'x': [0, 1], 'y': [0, 1]},
+            title = {'text': "Predicted Strength (MPa)", 'font': {'size': 24}},
+            number = {'suffix': " MPa", 'font': {'size': 40, 'color': "darkgreen"}},
+            gauge = {
+                'axis': {'range': [None, 100], 'tickwidth': 1, 'tickcolor': "darkblue"},
+                'bar': {'color': "darkgreen"},
+                'bgcolor': "white",
+                'borderwidth': 2,
+                'bordercolor': "gray",
+                'steps': [
+                    {'range': [0, 20], 'color': "#ffcccb"},   # Low strength (Reddish)
+                    {'range': [20, 40], 'color': "#ffffe0"},  # Normal strength (Yellowish)
+                    {'range': [40, 100], 'color': "#e0ffe0"}  # High strength (Greenish)
+                ]
+            }
+        ))
+        
+        fig.update_layout(height=350, margin=dict(l=10, r=10, t=50, b=10))
+        st.plotly_chart(fig, use_container_width=True)
+        
+        st.info("💡 **Note:** This prediction is based on the XGBoost model which achieved an R² score of 0.90 on the training dataset.")
+    else:
+        st.write("👈 Enter your mix design parameters on the left and click **Calculate** to see the interactive results.")
