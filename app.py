@@ -62,6 +62,28 @@ h1, h2, h3 { font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.05em; }
 #MainMenu, footer, header { visibility: hidden; }
 [data-testid="stDecoration"] { display: none; }
 
+/* ── Keyframe animations ── */
+@keyframes pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 6px #2dffb3; }
+    50% { opacity: 0.4; box-shadow: 0 0 12px #2dffb3; }
+}
+@keyframes shimmer {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+}
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+@keyframes glow {
+    0%, 100% { box-shadow: 0 0 5px rgba(0,212,255,0.15); }
+    50% { box-shadow: 0 0 20px rgba(0,212,255,0.3); }
+}
+
 /* ── Dividers ── */
 hr { border-color: var(--border) !important; }
 
@@ -234,9 +256,12 @@ def kpi_chip(label: str, value: str, accent: str = "#00d4ff") -> str:
     <div style="
         display:flex; flex-direction:column; align-items:center; justify-content:center;
         background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07);
+        border-bottom:2px solid {accent};
         border-radius:10px; padding:0.9rem 0.5rem; text-align:center;
+        transition:transform 0.2s, box-shadow 0.2s;
     ">
-        <span style="font-family:'DM Mono',monospace; font-size:1.35rem; font-weight:500; color:{accent};">{value}</span>
+        <span style="font-family:'DM Mono',monospace; font-size:1.35rem; font-weight:500; color:{accent};
+                     text-shadow:0 0 12px {accent}40;">{value}</span>
         <span style="font-family:'Barlow',sans-serif; font-size:0.7rem; text-transform:uppercase;
                      letter-spacing:0.07em; color:#6c7a8d; margin-top:0.25rem;">{label}</span>
     </div>"""
@@ -302,7 +327,7 @@ with st.sidebar:
                 background:rgba(45,255,179,0.08); border:1px solid rgba(45,255,179,0.2);
                 border-radius:8px; margin-bottom:1rem;">
         <span style="width:8px; height:8px; border-radius:50%; background:#2dffb3;
-                     box-shadow:0 0 6px #2dffb3; display:inline-block; animation:none;"></span>
+                     box-shadow:0 0 6px #2dffb3; display:inline-block; animation:pulse 2s ease-in-out infinite;"></span>
         <span style="font-family:'DM Mono',monospace; font-size:0.72rem;
                      color:#2dffb3; text-transform:uppercase; letter-spacing:0.08em;">
             Model Online
@@ -334,12 +359,14 @@ with st.sidebar:
 
 # ── Hero header ──
 st.markdown("""
-<div style="padding: 1rem 0 0.5rem 0;">
+<div style="padding: 1rem 0 0.5rem 0; animation: fadeInUp 0.6s ease-out;">
     <h1 style="font-family:'Bebas Neue',sans-serif; font-size:3rem; letter-spacing:0.08em;
                color:#e8edf3; margin:0; line-height:1;">
         COMPRESSIVE STRENGTH
-        <span style="background:linear-gradient(90deg,#00d4ff,#ff9533);
-                     -webkit-background-clip:text; -webkit-text-fill-color:transparent;">
+        <span style="background:linear-gradient(90deg,#00d4ff,#7b8cff,#ff9533,#00d4ff);
+                     background-size:200% auto;
+                     -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+                     animation: shimmer 4s linear infinite;">
             PREDICTOR
         </span>
     </h1>
@@ -378,10 +405,15 @@ with col_inputs:
         st.markdown("<div style='height:0.75rem'></div>", unsafe_allow_html=True)
 
         # Binders card
-        st.markdown(glass_card("""
-        <p style="font-family:'DM Mono',monospace; font-size:0.7rem; text-transform:uppercase;
-                  letter-spacing:0.1em; color:#00d4ff; margin:0 0 1rem 0;">Cementitious Materials</p>
-        """, accent="#00d4ff", padding="1.25rem 1.25rem 0.5rem 1.25rem"), unsafe_allow_html=True)
+        st.markdown("""
+        <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07);
+                    border-top:2px solid #00d4ff; border-radius:12px; padding:1.25rem 1.25rem 0.5rem 1.25rem;
+                    box-shadow:0 8px 40px rgba(0,0,0,0.5); backdrop-filter:blur(12px);
+                    margin-bottom:1rem; animation:fadeInUp 0.5s ease-out;">
+            <span style="font-family:'DM Mono',monospace; font-size:0.7rem; text-transform:uppercase;
+                        letter-spacing:0.1em; color:#00d4ff;">⚗️ Cementitious Materials</span>
+        </div>
+        """, unsafe_allow_html=True)
 
         b1, b2 = st.columns(2)
         with b1:
@@ -421,10 +453,15 @@ with col_inputs:
     with tab_aggs:
         st.markdown("<div style='height:0.75rem'></div>", unsafe_allow_html=True)
 
-        st.markdown(glass_card("""
-        <p style="font-family:'DM Mono',monospace; font-size:0.7rem; text-transform:uppercase;
-                  letter-spacing:0.1em; color:#ff9533; margin:0 0 1rem 0;">Aggregates & Chemical Admixtures</p>
-        """, accent="#ff9533", padding="1.25rem 1.25rem 0.5rem 1.25rem"), unsafe_allow_html=True)
+        st.markdown("""
+        <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07);
+                    border-top:2px solid #ff9533; border-radius:12px; padding:1.25rem 1.25rem 0.5rem 1.25rem;
+                    box-shadow:0 8px 40px rgba(0,0,0,0.5); backdrop-filter:blur(12px);
+                    margin-bottom:1rem; animation:fadeInUp 0.5s ease-out;">
+            <span style="font-family:'DM Mono',monospace; font-size:0.7rem; text-transform:uppercase;
+                        letter-spacing:0.1em; color:#ff9533;">🪨 Aggregates & Chemical Admixtures</span>
+        </div>
+        """, unsafe_allow_html=True)
 
         a1, a2 = st.columns(2)
         with a1:
@@ -609,8 +646,60 @@ with col_output:
         )
         st.plotly_chart(fig_bar, use_container_width=True)
 
+        # ── Strength development curve ──
+        st.markdown("<div style='height:0.5rem'></div>", unsafe_allow_html=True)
+        curve_ages = [1, 3, 7, 14, 28, 56, 90, 180, 365]
+        curve_strengths = []
+        for a in curve_ages:
+            inp = pd.DataFrame([[cement, slag, fly_ash, water, superplasticizer, coarse_agg, fine_agg, a]],
+                               columns=scaler.feature_names_in_)
+            curve_strengths.append(model.predict(scaler.transform(inp))[0])
+
+        fig_curve = go.Figure()
+        fig_curve.add_trace(go.Scatter(
+            x=curve_ages, y=curve_strengths, mode='lines+markers',
+            line=dict(color='#00d4ff', width=2.5, shape='spline'),
+            marker=dict(size=7, color='#080c10', line=dict(color='#00d4ff', width=2)),
+            fill='tozeroy',
+            fillcolor='rgba(0,212,255,0.06)',
+            name='Predicted Strength'
+        ))
+        # Highlight current age
+        fig_curve.add_trace(go.Scatter(
+            x=[age], y=[prediction], mode='markers',
+            marker=dict(size=14, color=grade_color, symbol='diamond',
+                        line=dict(color='#fff', width=1.5)),
+            name=f'Current ({age}d)',
+            showlegend=True
+        ))
+        fig_curve.update_layout(
+            title=dict(text="Strength Development Curve", font=dict(family='Barlow', size=12, color='#6c7a8d'), x=0),
+            height=220, margin=dict(l=10, r=20, t=35, b=30),
+            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+            xaxis=dict(title="Age (days)", type="log", showgrid=True, gridcolor="rgba(255,255,255,0.05)",
+                       tickfont=dict(family='DM Mono', size=9, color='#3d4e60'),
+                       titlefont=dict(family='Barlow', size=10, color='#6c7a8d')),
+            yaxis=dict(title="MPa", showgrid=True, gridcolor="rgba(255,255,255,0.05)",
+                       tickfont=dict(family='DM Mono', size=9, color='#3d4e60'),
+                       titlefont=dict(family='Barlow', size=10, color='#6c7a8d')),
+            legend=dict(font=dict(family='Barlow', size=10, color='#6c7a8d'),
+                        bgcolor='rgba(0,0,0,0)', x=0.02, y=0.98),
+            font_color="#a0b4c8"
+        )
+        st.plotly_chart(fig_curve, use_container_width=True)
+
         # ── Info note ──
-        st.info("💡 Prediction based on XGBoost model (R²=0.90). Results are indicative — lab testing is required for structural design.")
+        st.markdown("""
+        <div style="display:flex; align-items:flex-start; gap:0.7rem; padding:0.8rem 1rem;
+                    background:rgba(0,212,255,0.06); border:1px solid rgba(0,212,255,0.15);
+                    border-left:3px solid #00d4ff; border-radius:10px; animation:fadeInUp 0.6s ease-out;">
+            <span style="font-size:1.1rem; flex-shrink:0;">💡</span>
+            <span style="font-family:'Barlow',sans-serif; font-size:0.8rem; color:#a0b4c8; line-height:1.5;">
+                Prediction based on XGBoost model (R²=0.90). Results are indicative —
+                lab testing is required for structural design.
+            </span>
+        </div>
+        """, unsafe_allow_html=True)
 
     else:
         # ── Placeholder state ──
@@ -618,19 +707,25 @@ with col_output:
         <div style="
             display:flex; flex-direction:column; align-items:center; justify-content:center;
             height:400px; text-align:center;
-            background:rgba(255,255,255,0.02);
-            border:1px dashed rgba(255,255,255,0.08);
+            background:linear-gradient(145deg, rgba(0,212,255,0.03), rgba(255,149,51,0.03));
+            border:1px dashed rgba(255,255,255,0.1);
             border-radius:16px; gap:1rem;
+            animation: glow 3s ease-in-out infinite;
         ">
-            <div style="font-size:3rem; opacity:0.3;">🧱</div>
+            <div style="font-size:3.5rem; opacity:0.4; animation:float 3s ease-in-out infinite;">🧱</div>
             <p style="font-family:'Bebas Neue',sans-serif; font-size:1.6rem;
-                      letter-spacing:0.12em; color:rgba(255,255,255,0.15); margin:0;">
+                      letter-spacing:0.12em; color:rgba(255,255,255,0.18); margin:0;">
                 AWAITING PARAMETERS
             </p>
             <p style="font-family:'Barlow',sans-serif; font-size:0.82rem;
-                      color:#3d4e60; margin:0; max-width:260px; line-height:1.6;">
-                Configure your mix design on the left, then click <strong style="color:#6c7a8d;">Calculate</strong> to run the AI analysis.
+                      color:#4d5e70; margin:0; max-width:280px; line-height:1.6;">
+                Configure your mix design on the left, then click <strong style="color:#00d4ff;">Calculate</strong> to run the AI analysis.
             </p>
+            <div style="margin-top:0.5rem; display:flex; gap:0.5rem;">
+                <div style="width:6px; height:6px; border-radius:50%; background:#00d4ff; opacity:0.4; animation:pulse 2s ease-in-out infinite;"></div>
+                <div style="width:6px; height:6px; border-radius:50%; background:#7b8cff; opacity:0.4; animation:pulse 2s ease-in-out 0.3s infinite;"></div>
+                <div style="width:6px; height:6px; border-radius:50%; background:#ff9533; opacity:0.4; animation:pulse 2s ease-in-out 0.6s infinite;"></div>
+            </div>
         </div>
         """, unsafe_allow_html=True)
 
